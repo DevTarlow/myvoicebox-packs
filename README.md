@@ -1,51 +1,57 @@
-# MyVoiceBox Local — GPU Acceleration Pack
+# My Parrot — voice engine packs
 
 This repository hosts **release assets only**. It contains no application source.
 
-[MyVoiceBox Local](https://myvoicebox.dev) is a closed-source offline voice cloning
-and text-to-speech studio. Its base install ships CPU-only PyTorch, which keeps the
-buyer download small and works on every machine. GPU acceleration is an **optional
-add-on** hosted here, because it is large (roughly 2 GB compressed) and only some
-buyers want it.
+My Parrot is a closed-source offline voice cloning and text-to-speech studio for Windows and
+Linux. The app's own download carries the application and the engine's Python source, but not
+the interpreter and libraries the engine runs on. Those are what live here.
 
 ## Why a separate public repository
 
-GitHub Release assets on a private repository require an authenticated token to
-download. There is no way to embed a credential in a shipped desktop app without
-handing it to whoever looks, so the pack cannot live in the private source
-repository. Model weights are unaffected — those come directly from the vendor's own
-Hugging Face repositories.
+Release assets on a private repository need an authenticated token to download. There is no way
+to embed a credential in a shipped desktop app without handing it to whoever looks, so the files
+a buyer's app fetches cannot live beside its source.
+
+Model weights are unaffected. Those come from the vendor's own Hugging Face repositories.
 
 ## What is published here
 
-| Asset | Contents | Approx. size |
-|---|---|---|
-| `gpu-pack-win-cu124-<version>.zip.001`, `.002`, …` | CUDA 12.4 build of PyTorch plus the NVIDIA runtime libraries it needs, assembled for the app's runtime layout | ~2 GB across parts |
-| `gpu-pack-linux-cu124-<version>.tar.zst.001`, … | As above, for Linux | ~2 GB across parts |
-| `manifest.json` | Pack id, version, part list, byte sizes and **SHA-256 per part** | small |
+The voice engine: Python 3.11, PyTorch 2.6 (processor build) and the rest of the libraries the
+engine imports, assembled in the layout the app expects.
 
-Parts are split below **1.5 GB** to stay under GitHub's 2 GB per-asset limit. The
-app's installer downloads the parts, verifies each SHA-256, and refuses to install a
-pack that does not match. Downloads are resumable, and a manual
-"point me at a local folder" import path exists for buyers whose network blocks
-these hosts.
+| Asset | Platform | Download | Unpacked | SHA-256 |
+|---|---|---|---|---|
+| `runtime-linux-cpu-1.0.0.tar.gz` | Linux, x64 | 381 MB | about 1.36 GB | `6f429431412204133833be375430bef40242b082552e1ba55251f36cf3522579` |
+
+The app carries this address and this digest in its own manifest. It fetches the archive during
+setup, verifies the SHA-256 before it unpacks anything, and reuses the result for every later
+version of the app. Downloads resume, so a dropped connection does not start over.
+
+A Windows pack is not published yet. It has to be built on Windows, because it needs Windows
+wheels and a Windows interpreter, and it will appear here under the same tag once it is built.
 
 ## What is *not* here
 
-- Application source code — the app is closed source.
-- Model weights — those are fetched from the vendor's own Hugging Face repositories.
-- Anything that phones home. Nothing in this repository or in the app reports usage,
-  and the app makes no network request at all after setup.
+- Application source code. My Parrot is closed source.
+- Model weights. Those are fetched from the vendor's own Hugging Face repositories.
+- Anything that phones home. Nothing here or in the app reports usage, and the app makes no
+  network request at all after setup.
+
+## The graphics-card pack
+
+Version 1 runs on the processor. Rendering does not use a graphics card, and the app says so on
+its Hardware screen.
+
+A CUDA build was measured at roughly 6 to 8 times faster. It is not part of v1: it was cut
+rather than promised, and no screen in the app offers it. If it ships, it will appear here as
+its own asset.
 
 ## Licensing
 
-The pack redistributes NVIDIA CUDA runtime libraries and cuDNN DLLs inside the
-official PyTorch wheels. Those are redistributable under the NVIDIA CUDA Toolkit
-EULA (Attachment A) and the cuDNN SLA (Supplement §2, "the runtime files `.so` and
-`.dll`"), provided they are incorporated into an application with material
-additional functionality and are not distributed as a standalone SDK. PyTorch itself
-is BSD-3-Clause. The rest of the licence inventory ships in-app under
-"Third-party notices".
+The pack redistributes PyTorch and the Python libraries the engine imports, each under its own
+licence. The complete inventory, with each component's licence, ships inside the app as
+`THIRD-PARTY-NOTICES.txt`, generated from this pack so that list cannot drift from the files
+actually shipped. The rest of the app is covered by `LICENSE.txt`.
 
-Trademarks are the property of their respective owners. No NVIDIA or PyTorch
-endorsement is claimed or implied.
+If you believe something is missing from that list, please report it. An attribution gap is
+worth fixing, and it is better to hear about one than to ship it.
